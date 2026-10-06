@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>iPhone 12 Blue 64GB — XteInk Lover</title>
+  <meta name="description" content="Pre-loved iPhone 12 Blue 64GB in good condition. Battery health 87%. Comes with original box.">
+  <link rel="icon" href="../../../assets/img/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="../../../assets/css/style.css">
+</head>
+<body>
+
+  <header id="site-header" role="banner"></header>
+
+  <div class="product-detail-wrap">
+
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../../../index.html" id="bc-home">Home</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <a href="../../../categories/electronics/index.html" id="bc-cat">Electronics</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <span class="current">iPhone 12 – Blue 64GB</span>
+    </nav>
+
+    <!-- Detail Grid -->
+    <div class="detail-grid">
+
+      <!-- Left: Image Gallery -->
+      <div class="detail-gallery" id="product-gallery">
+        <div class="gallery-main">
+          <img
+            id="gallery-main-img"
+            src="images/thumb.jpg"
+            alt="iPhone 12 Blue 64GB main photo"
+            onerror="this.src='../../../assets/img/placeholder.svg'"
+          >
+        </div>
+        <div class="gallery-thumbs" id="gallery-thumbs"></div>
+      </div>
+
+      <!-- Right: Product Info -->
+      <div class="detail-info">
+
+        <div class="detail-cat-badge" id="detail-cat-badge">📱 Electronics</div>
+
+        <h1 class="detail-name" id="detail-name">iPhone 12 – Blue 64GB</h1>
+
+        <div class="detail-price" id="detail-price">$280</div>
+
+        <div class="detail-meta" id="detail-meta">
+          <span class="meta-chip">🏷️ Condition: <strong>Good</strong></span>
+          <span class="meta-chip">📅 Listed: <strong>Oct 1, 2026</strong></span>
+          <span class="meta-chip">🆔 ID: <strong>elec-001</strong></span>
+        </div>
+
+        <div class="detail-divider"></div>
+
+        <!-- Description — Edit this for each product -->
+        <div class="detail-desc">
+          <h4>About this item</h4>
+          <p>
+            iPhone 12 in Blue, 64GB storage. This phone has been used with care and is in
+            good working condition. Minor scratches on the back (visible under light), screen is
+            perfect with no cracks.
+          </p>
+
+          <br>
+          <h4>What's included</h4>
+          <ul>
+            <li>iPhone 12 (64GB, Blue)</li>
+            <li>Original box</li>
+            <li>USB-C to Lightning cable</li>
+            <li>No charger block (not included)</li>
+          </ul>
+
+          <br>
+          <h4>Key specs</h4>
+          <ul>
+            <li>Battery health: 87%</li>
+            <li>Face ID: working perfectly</li>
+            <li>iOS 17 (latest)</li>
+            <li>iCloud account removed</li>
+            <li>No carrier lock</li>
+          </ul>
+        </div>
+
+        <div class="detail-divider"></div>
+
+        <!-- Shop Now CTA -->
+        <div class="contact-box">
+          <h4>Ready to buy?</h4>
+          <a
+            id="shop-now-btn"
+            class="shop-now-btn"
+            target="_blank"
+            rel="noopener"
+          >
+            🛒 Shop Now
+          </a>
+        </div>
+
+      </div><!-- /detail-info -->
+    </div><!-- /detail-grid -->
+
+    <!-- Related Products -->
+    <div class="related-section">
+      <h2 class="section-title">More Electronics</h2>
+      <div class="related-grid" id="related-grid"></div>
+    </div>
+
+  </div><!-- /product-detail-wrap -->
+
+  <footer id="site-footer" role="contentinfo"></footer>
+  <div id="global-popup" role="dialog" aria-modal="true"></div>
+
+  <script src="../../../assets/js/products.js"></script>
+  <script src="../../../assets/js/app.js"></script>
+  <script>
+    /* ── Product slug for this page ── */
+    const PRODUCT_SLUG = 'iphone-12-blue';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage('electronics');
+
+      const product = getProductBySlug(PRODUCT_SLUG);
+      if (product) {
+        // Update page meta dynamically from products.js data
+        document.title = `${product.name} — ${SITE_CONFIG.name}`;
+        const priceEl = document.getElementById('detail-price');
+        if (priceEl) priceEl.textContent = formatPrice(product);
+
+        // Build thumbnails
+        buildGallery(product);
+      }
+
+      // Wire Shop Now button to configurable URL
+      const shopBtn = document.getElementById('shop-now-btn');
+      if (shopBtn) shopBtn.href = SITE_CONFIG.shopNowUrl;
+
+      // Related products (same category, exclude self)
+      const related = PRODUCTS
+        .filter(p => p.category === 'electronics' && p.slug !== PRODUCT_SLUG && !p.sold)
+        .slice(0, 4);
+      const relGrid = document.getElementById('related-grid');
+      if (relGrid) {
+        relGrid.innerHTML = related.length > 0
+          ? related.map(p => buildProductCard(p, '../../../')).join('')
+          : '<p style="color:var(--clr-text-muted);font-size:.9rem;">No other electronics listed yet.</p>';
+      }
+    });
+
+    function buildGallery(product) {
+      const mainImg = document.getElementById('gallery-main-img');
+      const thumbsEl = document.getElementById('gallery-thumbs');
+      if (!mainImg || !thumbsEl || !product.images || product.images.length < 2) return;
+
+      thumbsEl.innerHTML = product.images.map((img, i) => `
+        <div class="gallery-thumb ${i === 0 ? 'active' : ''}" id="thumb-${i}" data-src="${'../../../' + img}">
+          <img src="${'../../../' + img}" alt="Photo ${i+1}" onerror="this.src='../../../assets/img/placeholder.svg'">
+        </div>
+      `).join('');
+
+      thumbsEl.querySelectorAll('.gallery-thumb').forEach(thumb => {
+        thumb.addEventListener('click', () => {
+          mainImg.src = thumb.dataset.src;
+          thumbsEl.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+          thumb.classList.add('active');
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>

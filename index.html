@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>XteInk Lover — Curated Pre-loved Finds</title>
+  <meta name="description" content="Browse our collection of quality pre-loved items at honest prices. Electronics, fashion, books, home goods and more.">
+  <meta property="og:title" content="XteInk Lover — Curated Pre-loved Finds">
+  <meta property="og:description" content="Quality pre-loved items, honestly described, fairly priced.">
+  <link rel="icon" href="assets/img/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+  <!-- ══ HEADER (injected by app.js) ══ -->
+  <header id="site-header" role="banner"></header>
+
+  <!-- ══ HERO ══ -->
+  <section class="hero" aria-label="Site hero">
+    <div class="hero-inner">
+      <h1>Pre-loved Goods,<br>Honestly Priced</h1>
+      <p>Browse our curated collection of quality second-hand items — every piece carefully inspected and accurately described.</p>
+      <div class="hero-badges">
+        <div class="hero-badge">📦 <span id="badge-total-count">—</span> Active Listings</div>
+        <div class="hero-badge">✅ All Items Inspected</div>
+        <div class="hero-badge">💬 Fast Response</div>
+        <div class="hero-badge">🔖 Honest Pricing</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══ MAIN CONTENT ══ -->
+  <main id="main-content" role="main">
+
+    <!-- Sidebar -->
+    <aside id="sidebar" aria-label="Filter products">
+
+      <!-- Categories -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Categories</div>
+        <ul class="cat-list" id="cat-filter-list" role="list"></ul>
+      </div>
+
+      <!-- Price Range -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Price Range</div>
+        <div class="price-inputs">
+          <input type="number" id="price-min" placeholder="Min $" min="0" aria-label="Minimum price">
+          <input type="number" id="price-max" placeholder="Max $" min="0" aria-label="Maximum price">
+        </div>
+        <button class="filter-btn" id="apply-price-btn">Apply</button>
+      </div>
+
+      <!-- Condition -->
+      <div class="sidebar-section">
+        <div class="sidebar-title">Condition</div>
+        <div class="condition-pills" id="condition-filter">
+          <button class="cond-pill active" data-cond="all"  id="cond-all">All</button>
+          <button class="cond-pill" data-cond="Like New"    id="cond-like-new">Like New</button>
+          <button class="cond-pill" data-cond="Good"        id="cond-good">Good</button>
+          <button class="cond-pill" data-cond="Fair"        id="cond-fair">Fair</button>
+        </div>
+      </div>
+
+    </aside>
+
+    <!-- Products area -->
+    <section id="products-area" aria-label="Product listings">
+      <div class="area-header">
+        <div>
+          <span class="area-title" id="area-title">All Items</span>
+          <span class="area-count" id="area-count"></span>
+        </div>
+        <select class="sort-select" id="sort-select" aria-label="Sort products">
+          <option value="featured">Featured First</option>
+          <option value="price-asc">Price: Low → High</option>
+          <option value="price-desc">Price: High → Low</option>
+          <option value="newest">Newest First</option>
+        </select>
+      </div>
+
+      <div id="product-grid" role="list" aria-live="polite"></div>
+    </section>
+
+  </main>
+
+  <!-- ══ FOOTER (injected by app.js) ══ -->
+  <footer id="site-footer" role="contentinfo"></footer>
+
+  <!-- ══ GLOBAL POPUP ══ -->
+  <div id="global-popup" role="dialog" aria-modal="true"></div>
+
+  <!-- ══ SCRIPTS ══ -->
+  <script src="assets/js/products.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script>
+    /* ── Page state ── */
+    let activeCategory = 'all';
+    let activeCondition = 'all';
+    let priceMin = null;
+    let priceMax = null;
+
+    /* ── Init ── */
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage('home');
+      buildCategoryFilters();
+      renderProducts();
+      setupFilters();
+
+      // Active listing count badge
+      const total = PRODUCTS.filter(p => !p.sold).length;
+      const badgeEl = document.getElementById('badge-total-count');
+      if (badgeEl) badgeEl.textContent = total;
+    });
+
+    /* ── Build sidebar category list ── */
+    function buildCategoryFilters() {
+      const list = document.getElementById('cat-filter-list');
+      if (!list) return;
+      const counts = {};
+      PRODUCTS.filter(p => !p.sold).forEach(p => {
+        counts[p.category] = (counts[p.category] || 0) + 1;
+      });
+      const total = PRODUCTS.filter(p => !p.sold).length;
+
+      list.innerHTML = CATEGORIES.map(c => {
+        const count = c.slug === 'all' ? total : (counts[c.slug] || 0);
+        return `
+          <li class="cat-item ${c.slug === activeCategory ? 'active' : ''}"
+              data-cat="${c.slug}"
+              id="cat-${c.slug}"
+              role="listitem"
+              tabindex="0"
+              aria-pressed="${c.slug === activeCategory}">
+            <span><span class="cat-icon">${c.icon}</span> ${c.label}</span>
+            <span class="cat-count">${count}</span>
+          </li>
+        `;
+      }).join('');
+
+      list.querySelectorAll('.cat-item').forEach(item => {
+        item.addEventListener('click', () => {
+          activeCategory = item.dataset.cat;
+          list.querySelectorAll('.cat-item').forEach(i => {
+            i.classList.toggle('active', i.dataset.cat === activeCategory);
+            i.setAttribute('aria-pressed', i.dataset.cat === activeCategory);
+          });
+          renderProducts();
+        });
+        item.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') item.click(); });
+      });
+    }
+
+    /* ── Setup price & condition filters ── */
+    function setupFilters() {
+      document.getElementById('apply-price-btn').addEventListener('click', () => {
+        const minVal = document.getElementById('price-min').value;
+        const maxVal = document.getElementById('price-max').value;
+        priceMin = minVal ? parseFloat(minVal) : null;
+        priceMax = maxVal ? parseFloat(maxVal) : null;
+        renderProducts();
+      });
+
+      document.getElementById('condition-filter').querySelectorAll('.cond-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          activeCondition = pill.dataset.cond;
+          document.querySelectorAll('.cond-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          renderProducts();
+        });
+      });
+
+      document.getElementById('sort-select').addEventListener('change', renderProducts);
+    }
+
+    /* ── Render product grid ── */
+    function renderProducts() {
+      const grid = document.getElementById('product-grid');
+      const title = document.getElementById('area-title');
+      const countEl = document.getElementById('area-count');
+      if (!grid) return;
+
+      // Filter
+      let list = PRODUCTS.filter(p => !p.sold);
+      if (activeCategory !== 'all') list = list.filter(p => p.category === activeCategory);
+      if (activeCondition !== 'all') list = list.filter(p => p.condition === activeCondition);
+      if (priceMin !== null) list = list.filter(p => p.price >= priceMin);
+      if (priceMax !== null) list = list.filter(p => p.price <= priceMax);
+
+      // Sort
+      const sort = document.getElementById('sort-select').value;
+      if (sort === 'price-asc')  list.sort((a, b) => a.price - b.price);
+      if (sort === 'price-desc') list.sort((a, b) => b.price - a.price);
+      if (sort === 'newest')     list.sort((a, b) => new Date(b.date) - new Date(a.date));
+      if (sort === 'featured')   list.sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+
+      // Update heading
+      const cat = CATEGORIES.find(c => c.slug === activeCategory);
+      if (title) title.textContent = cat ? cat.label : 'All Items';
+      if (countEl) countEl.textContent = `${list.length} item${list.length !== 1 ? 's' : ''}`;
+
+      // Render
+      if (list.length === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <h3>No items found</h3>
+            <p>Try adjusting your filters or check back later.</p>
+          </div>`;
+        return;
+      }
+      grid.innerHTML = list.map(p => buildProductCard(p, './')).join('');
+    }
+  </script>
+
+</body>
+</html>

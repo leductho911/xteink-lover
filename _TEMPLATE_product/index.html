@@ -1,0 +1,174 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--
+  ╔══════════════════════════════════════════════════════╗
+  ║   PRODUCT PAGE TEMPLATE — XteInk Lover              ║
+  ║   Copy this file to: products/{category}/{slug}/     ║
+  ║   Then fill in all the <!-- EDIT --> sections below  ║
+  ╚══════════════════════════════════════════════════════╝
+  -->
+
+  <!-- EDIT: Update title and description -->
+  <title>PRODUCT NAME — XteInk Lover</title>
+  <meta name="description" content="PRODUCT SHORT DESCRIPTION for SEO.">
+
+  <link rel="icon" href="../../../assets/img/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="../../../assets/css/style.css">
+</head>
+<body>
+
+  <header id="site-header" role="banner"></header>
+
+  <div class="product-detail-wrap">
+
+    <!-- Breadcrumb — EDIT: update category href and label -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a href="../../../index.html" id="bc-home">Home</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <a href="../../../categories/CATEGORY_SLUG/index.html" id="bc-cat">CATEGORY LABEL</a>
+      <span class="sep" aria-hidden="true">›</span>
+      <span class="current">PRODUCT NAME</span><!-- EDIT -->
+    </nav>
+
+    <!-- Detail Grid -->
+    <div class="detail-grid">
+
+      <!-- Left: Image Gallery — images auto-loaded from products.js -->
+      <div class="detail-gallery" id="product-gallery">
+        <div class="gallery-main">
+          <img
+            id="gallery-main-img"
+            src="images/thumb.jpg"<!-- EDIT: path to main image -->
+            alt="PRODUCT NAME main photo"<!-- EDIT -->
+            onerror="this.src='../../../assets/img/placeholder.svg'"
+          >
+        </div>
+        <div class="gallery-thumbs" id="gallery-thumbs"></div>
+      </div>
+
+      <!-- Right: Product Info -->
+      <div class="detail-info">
+
+        <!-- EDIT: category icon + label -->
+        <div class="detail-cat-badge" id="detail-cat-badge">📦 CATEGORY LABEL</div>
+
+        <!-- EDIT: product name -->
+        <h1 class="detail-name" id="detail-name">PRODUCT NAME</h1>
+
+        <!-- EDIT: price (also update in products.js) -->
+        <div class="detail-price" id="detail-price">$0</div>
+
+        <!-- EDIT: condition, date, product ID -->
+        <div class="detail-meta" id="detail-meta">
+          <span class="meta-chip">🏷️ Condition: <strong>CONDITION</strong></span>
+          <span class="meta-chip">📅 Listed: <strong>DATE</strong></span>
+          <span class="meta-chip">🆔 ID: <strong>PRODUCT_ID</strong></span>
+        </div>
+
+        <div class="detail-divider"></div>
+
+        <!-- EDIT: Write your product description here -->
+        <div class="detail-desc">
+          <h4>About this item</h4>
+          <p>
+            Write your product description here. Be honest and accurate.
+            Describe the condition, any flaws, usage history, etc.
+          </p>
+
+          <br>
+          <h4>What's included</h4>
+          <ul>
+            <li>Item 1</li>
+            <li>Item 2</li>
+          </ul>
+
+          <br>
+          <h4>Key details</h4>
+          <ul>
+            <li>Detail 1</li>
+            <li>Detail 2</li>
+          </ul>
+        </div>
+
+        <div class="detail-divider"></div>
+
+        <!-- Contact Box — EDIT: update WA number, email, product name, price -->
+        
+    param($m)
+    # We'll handle this below with a more targeted replace
+    $m.Value
+  </div><!-- /detail-info -->
+    </div><!-- /detail-grid -->
+
+    <!-- Related Products — EDIT: update the category slug below -->
+    <div class="related-section">
+      <h2 class="section-title">More from this Category</h2>
+      <div class="related-grid" id="related-grid"></div>
+    </div>
+
+  </div><!-- /product-detail-wrap -->
+
+  <footer id="site-footer" role="contentinfo"></footer>
+  <div id="global-popup" role="dialog" aria-modal="true"></div>
+
+  <script src="../../../assets/js/products.js"></script>
+  <script src="../../../assets/js/app.js"></script>
+  <script>
+    /* EDIT: Change these two values */
+    const PRODUCT_SLUG     = 'YOUR_PRODUCT_SLUG';   // must match slug in products.js
+    const PRODUCT_CATEGORY = 'YOUR_CATEGORY_SLUG';  // must match category slug
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage(PRODUCT_CATEGORY);
+      const shopBtn = document.getElementById('shop-now-btn');
+      if (shopBtn) shopBtn.href = SITE_CONFIG.shopNowUrl;
+
+      const product = getProductBySlug(PRODUCT_SLUG);
+      if (product) {
+        document.title = `${product.name} — ${SITE_CONFIG.name}`;
+        const priceEl = document.getElementById('detail-price');
+        if (priceEl) priceEl.textContent = formatPrice(product);
+        buildGallery(product);
+      }
+
+      // Related products (same category, exclude self)
+      const related = PRODUCTS
+        .filter(p => p.category === PRODUCT_CATEGORY && p.slug !== PRODUCT_SLUG && !p.sold)
+        .slice(0, 4);
+      const relGrid = document.getElementById('related-grid');
+      if (relGrid) {
+        relGrid.innerHTML = related.length > 0
+          ? related.map(p => buildProductCard(p, '../../../')).join('')
+          : '<p style="color:var(--clr-text-muted);font-size:.9rem;">No related items yet.</p>';
+      }
+    });
+
+    function buildGallery(product) {
+      const mainImg = document.getElementById('gallery-main-img');
+      const thumbsEl = document.getElementById('gallery-thumbs');
+      if (!mainImg || !thumbsEl || !product.images || product.images.length < 2) return;
+
+      thumbsEl.innerHTML = product.images.map((img, i) => `
+        <div class="gallery-thumb ${i === 0 ? 'active' : ''}" id="thumb-${i}" data-src="${'../../../' + img}">
+          <img src="${'../../../' + img}" alt="Photo ${i+1}" onerror="this.src='../../../assets/img/placeholder.svg'">
+        </div>
+      `).join('');
+
+      thumbsEl.querySelectorAll('.gallery-thumb').forEach(thumb => {
+        thumb.addEventListener('click', () => {
+          mainImg.src = thumb.dataset.src;
+          thumbsEl.querySelectorAll('.gallery-thumb').forEach(t => t.classList.remove('active'));
+          thumb.classList.add('active');
+        });
+      });
+    }
+  </script>
+
+</body>
+</html>
+
+

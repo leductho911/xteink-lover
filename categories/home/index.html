@@ -1,0 +1,103 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home & Living — XteInk Lover</title>
+  <meta name="description" content="Pre-owned kitchen gear, decor, and furniture.">
+  <link rel="icon" href="../../assets/img/logo.jpg" type="image/jpeg">
+  <link rel="stylesheet" href="../../assets/css/style.css">
+</head>
+<body>
+  <header id="site-header" role="banner"></header>
+  <section class="category-hero" aria-label="Category header">
+    <div class="cat-emoji" aria-hidden="true">🏠</div>
+    <h1>Home & Living</h1>
+    <p>Pre-owned kitchen gear, decor, and furniture.</p>
+  </section>
+  <main id="main-content" role="main">
+    <aside id="sidebar" aria-label="Filter products">
+      <div class="sidebar-section">
+        <div class="sidebar-title">Condition</div>
+        <div class="condition-pills" id="condition-filter">
+          <button class="cond-pill active" data-cond="all"     id="cond-all">All</button>
+          <button class="cond-pill"        data-cond="Like New" id="cond-like-new">Like New</button>
+          <button class="cond-pill"        data-cond="Good"    id="cond-good">Good</button>
+          <button class="cond-pill"        data-cond="Fair"    id="cond-fair">Fair</button>
+        </div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">Price Range</div>
+        <div class="price-inputs">
+          <input type="number" id="price-min" placeholder="Min" min="0" aria-label="Minimum price">
+          <input type="number" id="price-max" placeholder="Max" min="0" aria-label="Maximum price">
+        </div>
+        <button class="filter-btn" id="apply-price-btn">Apply</button>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-title">All Categories</div>
+        <ul class="cat-list" id="cat-filter-list" role="list"></ul>
+      </div>
+    </aside>
+    <section id="products-area" aria-label="Home & Living listings">
+      <div class="area-header">
+        <div>
+          <span class="area-title">Home & Living</span>
+          <span class="area-count" id="area-count"></span>
+        </div>
+        <select class="sort-select" id="sort-select" aria-label="Sort products">
+          <option value="featured">Featured First</option>
+          <option value="price-asc">Price: Low to High</option>
+          <option value="price-desc">Price: High to Low</option>
+          <option value="newest">Newest First</option>
+        </select>
+      </div>
+      <div id="product-grid" role="list" aria-live="polite"></div>
+    </section>
+  </main>
+  <footer id="site-footer" role="contentinfo"></footer>
+  <div id="global-popup" role="dialog" aria-modal="true"></div>
+  <script src="../../assets/js/products.js"></script>
+  <script src="../../assets/js/app.js"></script>
+  <script>
+    const PAGE_CATEGORY = 'home';
+    let activeCondition = 'all', priceMin = null, priceMax = null;
+    document.addEventListener('DOMContentLoaded', () => {
+      initPage(PAGE_CATEGORY);
+      const list = document.getElementById('cat-filter-list');
+      if (list) list.innerHTML = CATEGORIES.filter(c => c.slug !== 'all').map(c => <li class="cat-item +${c.slug === PAGE_CATEGORY ? 'active' : ''}+" id="sidebar-cat-+${c.slug}+" role="listitem"><a href="../../categories/+${c.slug}+/index.html" style="display:flex;align-items:center;width:100%;"><span>+${c.icon}+ +${c.label}+</span></a></li>).join('');
+      renderProducts();
+      document.getElementById('apply-price-btn').addEventListener('click', () => {
+        priceMin = parseFloat(document.getElementById('price-min').value) || null;
+        priceMax = parseFloat(document.getElementById('price-max').value) || null;
+        renderProducts();
+      });
+      document.querySelectorAll('.cond-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          activeCondition = pill.dataset.cond;
+          document.querySelectorAll('.cond-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          renderProducts();
+        });
+      });
+      document.getElementById('sort-select').addEventListener('change', renderProducts);
+    });
+    function renderProducts() {
+      const grid = document.getElementById('product-grid');
+      const countEl = document.getElementById('area-count');
+      let items = getProducts(PAGE_CATEGORY);
+      if (activeCondition !== 'all') items = items.filter(p => p.condition === activeCondition);
+      if (priceMin !== null) items = items.filter(p => p.price >= priceMin);
+      if (priceMax !== null) items = items.filter(p => p.price <= priceMax);
+      const sort = document.getElementById('sort-select').value;
+      if (sort === 'price-asc')  items.sort((a,b) => a.price - b.price);
+      if (sort === 'price-desc') items.sort((a,b) => b.price - a.price);
+      if (sort === 'newest')     items.sort((a,b) => new Date(b.date) - new Date(a.date));
+      if (countEl) countEl.textContent = items.length + ' item' + (items.length !== 1 ? 's' : '');
+      grid.innerHTML = items.length === 0
+        ? '<div class="empty-state"><div class="empty-icon">📭</div><h3>No items yet</h3><p>Check back soon!</p></div>'
+        : items.map(p => buildProductCard(p, '../../')).join('');
+    }
+  </script>
+</body>
+</html>
